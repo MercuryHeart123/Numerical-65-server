@@ -1,11 +1,21 @@
-import Express, { Application, Request, Response, NextFunction } from "express";
-var port: number = 8080;
-var app: Application = Express();
+import Express, { Application, Request, Response, NextFunction } from "express"
+import dotenv from "dotenv"
+import { mainRouter } from './routes'
+import * as database from './database'
 
-app.get("/", (req: Request, res: Response, next: NextFunction): Object => {
-    return res.json(req.query);
+dotenv.config()
+database.dbConnect()
+var port = process.env.PORT
+var app: Application = Express()
+app.use(Express.urlencoded())
+app.use(Express.json())
+
+app.use(mainRouter)
+
+app.use((req: Request, res: Response) => {
+    res.status(404).send("Error 404 not found")
 })
 
 app.listen(port, () => {
-    console.log("server start at port : ", port);
+    console.log(`server start at : http://localhost:${port}`)
 })
