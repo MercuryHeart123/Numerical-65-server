@@ -2,11 +2,14 @@ import { DocumentDefinition } from 'mongoose';
 import { I_UserDocument, UserModel } from '../models/userModel';
 import * as crypto from 'crypto';
 import jwt, { Secret, JwtPayload } from 'jsonwebtoken';
+import { Request, Response, NextFunction } from 'express';
+import { getErrorMessage } from '../../utill/errUtill';
 
 interface LoginRequest {
     username: string;
     password: string;
 }
+const SECRET_KEY: Secret = '1234';
 
 export async function register(user: DocumentDefinition<I_UserDocument>): Promise<void> {
     try {
@@ -31,17 +34,56 @@ export async function login(user: LoginRequest) {
             1000, 64, `sha512`).toString(`hex`)
 
         if (testPassword === foundUser.password) {
-            const SECRET_KEY: Secret = 'your-secret-key-here';
             const token = jwt.sign({ username: foundUser.username, isAdmin: foundUser.isAdmin }, SECRET_KEY, {
                 expiresIn: '1 hours',
             });
+            await UserModel.updateOne({ username: user.username }, { $set: { lastLogin: new Date() } });
 
-            return { username: foundUser.username, token: token };
+            return { username: foundUser.username, isAdmin: foundUser.isAdmin, token: token };
         } else {
             throw new Error('Password is not correct');
         }
 
     } catch (error) {
         throw error;
+    }
+}
+
+export const verifyToken = async (req: Request) => {
+    try {
+        var token: string | undefined = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) {
+            throw new Error('Please authenticate');
+        }
+        const decoded = jwt.verify(token, SECRET_KEY);
+        return decoded;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const verifyAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        let decoded = await verifyToken(req);
+        if ((<any>decoded).isAdmin) {
+            next();
+        } else {
+            throw new Error('You are not admin');
+        }
+    } catch (error) {
+        res.status(401).send({ error: getErrorMessage(error) });
+    }
+}
+
+export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        let decoded = await verifyToken(req);
+        if ((<any>decoded).username) {
+            next();
+        } else {
+            throw new Error('You are not user');
+        }
+    } catch (error) {
+        res.status(401).send({ error: getErrorMessage(error) });
     }
 }

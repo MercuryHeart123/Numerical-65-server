@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as userServices from '../services/authService';
-
+import { getErrorMessage } from "../../utill/errUtill";
 interface responseReturn {
     status: string
     success: boolean
@@ -8,10 +8,31 @@ interface responseReturn {
     data?: Object
 }
 
+export const loginVerify = async (req: Request, res: Response) => {
+    var response: responseReturn
+    try {
+        let decoded = await userServices.verifyToken(req);
 
-export function getErrorMessage(error: unknown) {
-    if (error instanceof Error) return error.message;
-    return String(error);
+        response = {
+            status: 'success',
+            success: true,
+            msg: 'verify token success',
+            data: {
+                username: (<any>decoded).username,
+                isAdmin: (<any>decoded).isAdmin
+            }
+        }
+        return res.status(200).send(response);
+
+        // next();
+    } catch (error) {
+        response = {
+            status: 'error',
+            success: false,
+            msg: getErrorMessage(error)
+        }
+        return res.status(401).send(response);
+    }
 }
 
 export const postLogin = async (req: Request, res: Response) => {
@@ -24,7 +45,9 @@ export const postLogin = async (req: Request, res: Response) => {
             msg: 'Login successful',
             data: foundUser
         }
-        res.status(200).send(response);
+        console.log(response);
+
+        return res.status(200).send(response);
     } catch (error) {
         response = {
             status: 'error',
@@ -45,7 +68,7 @@ export const registerOne = async (req: Request, res: Response) => {
             success: true,
             msg: 'User registered successfully'
         }
-        res.status(200).send(response);
+        return res.status(200).send(response);
     } catch (error) {
         response = {
             status: 'error',

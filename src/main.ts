@@ -2,6 +2,7 @@ import Express, { Application, Request, Response, NextFunction } from "express"
 import dotenv from "dotenv"
 import { mainRouter } from './routes'
 import * as database from './database'
+import cors from 'cors'
 
 dotenv.config()
 database.dbConnect()
@@ -9,6 +10,7 @@ var port = process.env.PORT
 var app: Application = Express()
 app.use(Express.urlencoded())
 app.use(Express.json())
+app.use(cors<Request>())
 
 app.use(mainRouter)
 
