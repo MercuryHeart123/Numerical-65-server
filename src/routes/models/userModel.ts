@@ -20,7 +20,6 @@ const UserSchema: mongoose.Schema<I_UserDocument> = new mongoose.Schema({
 
 UserSchema.pre('save', async function (next) {
     const user = this;
-    console.log(user);
 
     if (user.isModified('password')) {
         let salt = crypto.randomBytes(16).toString('hex')

@@ -7,7 +7,7 @@ export const dbConnect = () => {
 
     set('strictQuery', false)
     connect(uri, (err) => {
-        if (!err) console.log('MongoDB has connected successfully.');
+        if (!err) console.log('MongoDB has failed to connect.');
     });
     connection.on('connect', function () {
         console.error('MongoDB has connected successfully');

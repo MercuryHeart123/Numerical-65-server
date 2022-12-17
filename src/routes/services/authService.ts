@@ -1,7 +1,7 @@
 import { DocumentDefinition } from 'mongoose';
 import { I_UserDocument, UserModel } from '../models/userModel';
 import * as crypto from 'crypto';
-import jwt, { Secret, JwtPayload } from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { getErrorMessage } from '../../utill/errUtill';
 
@@ -9,7 +9,8 @@ interface LoginRequest {
     username: string;
     password: string;
 }
-const SECRET_KEY: Secret = '1234';
+
+const SECRET_KEY: Secret = 'test!1234';
 
 export async function register(user: DocumentDefinition<I_UserDocument>): Promise<void> {
     try {
@@ -28,7 +29,7 @@ export async function login(user: LoginRequest) {
     try {
         const foundUser = await UserModel.findOne({ username: user.username });
         if (!foundUser) {
-            throw new Error('User not found')
+            throw new Error(`User not found (${user.username})`)
         }
         let testPassword = crypto.pbkdf2Sync(user.password, foundUser.salt,
             1000, 64, `sha512`).toString(`hex`)
@@ -41,7 +42,7 @@ export async function login(user: LoginRequest) {
 
             return { username: foundUser.username, isAdmin: foundUser.isAdmin, token: token };
         } else {
-            throw new Error('Password is not correct');
+            throw new Error(`Password is not correct ${user.username}`);
         }
 
     } catch (error) {
