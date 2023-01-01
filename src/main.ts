@@ -1,33 +1,45 @@
-import Express, { Application, Request, Response, NextFunction } from "express"
-import dotenv from "dotenv"
-import { mainRouter } from './routes'
-import * as database from './database'
-import cors from 'cors'
-import http, { Server } from 'http';
-import { WebSocketService } from "./webSocket"
+import dotenv, { DotenvParseOutput } from "dotenv"
+import { Connection, set, createConnection } from "mongoose"
+import { userRepository } from "./repositories/user"
+import { UseCase } from "./use_case/useCase"
+import { expressServer } from "./interface/express"
+import { methodRepository } from "./repositories/method"
 
-dotenv.config()
-database.dbConnect()
-var port = process.env.PORT
-var app: Application = Express()
-app.use(Express.urlencoded())
-app.use(Express.json())
-app.use(cors<Request>())
+export interface Config extends DotenvParseOutput {
+    DB_USER: string,
+    DB_PWD: string,
+    DB_IP: string,
+    DB_PORT: string,
+    DB_NAME: string,
+    PORT: string,
+    SECRET_KEY: string
+}
 
+const initRepository = async (cfg: Config) => {
 
+    var uri = `mongodb://${cfg.DB_USER}:${cfg.DB_PWD}@${cfg.DB_IP}:${cfg.DB_PORT}/${cfg.DB_NAME}`;
+    set('strictQuery', false)
+    const client: Connection = createConnection(uri);
 
-const server: Server = http.createServer(app);
-const webSocket = new WebSocketService(server)
-// webSocket.connect(server)
-export { webSocket }
+    client.on('open', function () {
+        console.log('MongoDB connection established!');
+    });
+    var userRepo = new userRepository(client)
+    var methodRepo = new methodRepository(client)
 
-// let wss = StartWebSocketServer(server)
+    return { userRepo, methodRepo }
+}
 
-app.use(mainRouter)
+const initInterface = async (useCase: UseCase, cfg: Config) => {
+    const server = new expressServer(useCase, cfg)
+    server.start()
+}
 
-app.use((req: Request, res: Response) => {
-    res.status(404).send("Error 404 not found")
-})
-server.listen(port, () => {
-    console.log(`server start at : http://localhost:${port}`)
-})
+const start = async () => {
+    let cfg = dotenv.config().parsed as Config
+    let { userRepo, methodRepo } = await initRepository(cfg)
+    let useCase = new UseCase(userRepo, methodRepo, cfg)
+    initInterface(useCase, cfg)
+}
+
+start()
