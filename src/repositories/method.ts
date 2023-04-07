@@ -31,10 +31,10 @@ export class methodRepository implements MethodRepository {
         return this.MethodModel.find();
     }
 
-    async updateMethodById(body: { methodId: string, available: boolean }): Promise<I_MethodDocument> {
-        let update = { available: body.available };
+    async updateMethodById(methodId: string, available: boolean): Promise<I_MethodDocument> {
+        let update = { available: available };
         let updated = await this.MethodModel.findOneAndUpdate({
-            _id: body.methodId
+            _id: methodId
         },
             update,
             { new: true }

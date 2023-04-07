@@ -4,7 +4,7 @@ import * as crypto from 'crypto';
 
 export interface UserRepository {
     findOne(username: string): Promise<I_UserDocument | null>;
-    create(user: I_UserDocument): void;
+    create(username: string, password: string): void;
     loginStampByUsername(username: string): void;
 }
 
@@ -49,8 +49,8 @@ export class userRepository implements UserRepository {
         return this.UserModel.findOne({ username: username });
     }
 
-    create(user: I_UserDocument): void {
-        this.UserModel.create(user);
+    create(username: string, password: string): void {
+        this.UserModel.create(username, password);
     }
 
     loginStampByUsername(username: string): void {

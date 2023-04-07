@@ -1,16 +1,14 @@
 import * as WebSocket from 'ws';
 import { Server } from 'http';
 interface IConnection {
-    connections: Map<string, WebSocket>;
-    wss?: WebSocket.Server;
     broadcast: (message: any) => void;
     add: (id: string, ws: WebSocket) => void;
     getUniqueID: () => string;
 
 }
 export class WebSocketService implements IConnection {
-    connections: Map<string, WebSocket>;
-    wss?: WebSocket.Server;
+    private connections: Map<string, WebSocket>;
+    private wss: WebSocket.Server;
     constructor(server: Server) {
         this.connections = new Map<string, WebSocket>();
         this.wss = new WebSocket.Server({ server: server, path: '/ws' });
@@ -42,8 +40,10 @@ export class WebSocketService implements IConnection {
     }
 
     broadcast(message: any) {
+        let data = `~ $ ${new Date().toLocaleTimeString()} : ${message}`
+        console.log(data);
         this.connections.forEach((connection) =>
-            connection.send(JSON.stringify(message))
+            connection.send(JSON.stringify(data))
         );
     }
 }
