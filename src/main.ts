@@ -15,7 +15,7 @@ export interface Config extends DotenvParseOutput {
     SECRET_KEY: string
 }
 
-const initRepository = async (cfg: Config) => {
+export const initRepository = async (cfg: Config) => {
 
     var uri = `mongodb://${cfg.DB_USER}:${cfg.DB_PWD}@${cfg.DB_IP}:${cfg.DB_PORT}/${cfg.DB_NAME}`;
     set('strictQuery', false)
@@ -32,17 +32,19 @@ const initRepository = async (cfg: Config) => {
     return { userRepo, methodRepo }
 }
 
-const initInterface = async (useCase: UseCase, cfg: Config) => {
+export const initInterface = async (useCase: UseCase, cfg: Config) => {
     const server = new expressServer(useCase, cfg)
     const webSocket = new WebSocketService(server.server)
     server.start(webSocket)
 }
 
-const start = async () => {
+export const start = async () => {
     let cfg = dotenv.config().parsed as Config
     let { userRepo, methodRepo } = await initRepository(cfg)
     let useCase = new UseCase(userRepo, methodRepo, cfg)
     initInterface(useCase, cfg)
-}
 
+}
 start()
+
+

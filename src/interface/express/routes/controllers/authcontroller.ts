@@ -5,8 +5,8 @@ import { authUseCase } from "../../../../use_case/authUseCase";
 import { WebSocketService } from "../../../webSocket";
 export class authController {
     private useCase: authUseCase
-    private webSocket: WebSocketService
-    constructor(useCase: authUseCase, webSocket: WebSocketService) {
+    private webSocket?: WebSocketService
+    constructor(useCase: authUseCase, webSocket?: WebSocketService) {
         this.useCase = useCase
         this.webSocket = webSocket
     }
@@ -117,8 +117,10 @@ export class authController {
                 data: foundUser
             }
             console.log(this.webSocket);
+            if (this.webSocket) {
+                this.webSocket.broadcast(`User ${foundUser.username} login`)
 
-            this.webSocket.broadcast(`User ${foundUser.username} login`)
+            }
 
             return res.status(200).send(response);
         } catch (error) {

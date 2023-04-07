@@ -12,7 +12,7 @@ export class UseCase {
 
     constructor(userRepo: userRepository, methodRepo: methodRepository, cfg: Config) {
         this.authUseCase = new authUseCase(userRepo, cfg);
-        this.apiUseCase = new apiUseCase(methodRepo, cfg);
+        this.apiUseCase = new apiUseCase(methodRepo);
         this.cfg = cfg;
     }
 

@@ -3,10 +3,9 @@ import { methodRepository } from "../repositories/method"
 import { evaluate, derivative, multiply, det } from 'mathjs'
 export class apiUseCase {
     private methodRepository: methodRepository;
-    private cfg: Config;
-    constructor(methodRepo: methodRepository, cfg: Config) {
+    constructor(methodRepo: methodRepository) {
         this.methodRepository = methodRepo;
-        this.cfg = cfg;
+
     }
 
     public listAllMethod = async () => {
@@ -14,7 +13,7 @@ export class apiUseCase {
     }
 
     public updateMethodById = async (methodId: string, available: boolean) => {
-        return this.methodRepository.updateMethodById(methodId, available);
+        return this.methodRepository.updateMethodById({ methodId, available });
     }
 
     public checkValidMethod = async (latex: string, xl: number, xr: number) => {
